@@ -35,6 +35,15 @@ class ListAlarmActivity : AppCompatActivity(), AlarmClickListener {
         const val NOTIFY_ID = 200
         const val ALARM_CODE = 1
         const val NOTIF_CODE = 0
+
+//        edit alarm val
+        const val REQUEST_ADD = 1
+        const val REQUEST_EDIT = 2
+        const val OPTION_SAVE = 3
+        const val OPTION_CANCEL = -1
+
+        // alarm constant identifier
+        const val ALARM_EXTRA = "extra_alarm"
     }
 
     private lateinit var binding: ActivityListAlarmBinding
@@ -49,8 +58,8 @@ class ListAlarmActivity : AppCompatActivity(), AlarmClickListener {
         supportActionBar?.title = "Alarm"
 
         alarmViewModel = ViewModelProvider(this).get(AlarmViewModel::class.java)
-
         listAlarmAdapter = ListAlarmAdapter(this)
+
 
         binding.listAlarmRecycler.apply {
             adapter = listAlarmAdapter
@@ -67,29 +76,9 @@ class ListAlarmActivity : AppCompatActivity(), AlarmClickListener {
 
         binding.listAlarmFab.setOnClickListener {
             val intent = Intent(this, EditAlarmActivity::class.java)
-            startActivity(intent)
+            startActivityForResult(intent, REQUEST_ADD)
         }
     }
-
-    private fun insertDataToDatabase(calendar: Calendar) {
-        val timeString = DateFormat.format("HH:mm", calendar.time)
-        val alarm = Alarm(0, calendar.timeInMillis, timeString.toString())
-
-        alarmViewModel.addAlarm(alarm)
-
-        Log.d("mainActivity", "alarm inserted with time: $timeString.toString()")
-    }
-
-
-    private fun updateDataInDatabase(calendar: Calendar) {
-        val timeString = DateFormat.format("HH:mm", calendar.time)
-        val alarm = Alarm(0, calendar.timeInMillis, timeString.toString())
-
-        alarmViewModel.updateAlarm(alarm)
-
-        Log.d("mainActivity", "alarm updated with time: $timeString.toString()")
-    }
-
 
     private fun startAlarm(calendar: Calendar) {
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -172,7 +161,27 @@ class ListAlarmActivity : AppCompatActivity(), AlarmClickListener {
         return alarmTracker
     }
 
-    override fun onAlarmClicked(alarm: Alarm) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
 
+        when (requestCode) {
+            REQUEST_ADD -> {
+                if (resultCode == OPTION_SAVE) {
+                    Log.d("listAlarm", "masuk ke request add")
+                }
+            }
+            REQUEST_EDIT -> {
+                if (resultCode == OPTION_SAVE) {
+                    Log.d("listAlarm", "masuk ke request edit")
+                }
+            }
+        }
+
+    }
+
+    override fun onAlarmClicked(alarm: Alarm) {
+        val intent = Intent(this, EditAlarmActivity::class.java)
+        intent.putExtra(ALARM_EXTRA, alarm)
+        startActivityForResult(intent, REQUEST_EDIT)
     }
 }
