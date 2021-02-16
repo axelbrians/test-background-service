@@ -14,6 +14,11 @@ import com.machina.test_background_task.databinding.ActivityEditAlarmBinding
 
 class EditAlarmActivity : AppCompatActivity(), TimePicker.OnTimeChangedListener {
 
+    companion object {
+        private const val TAG = "EditAlarmActivity"
+    }
+    
+    
     private lateinit var binding: ActivityEditAlarmBinding
     private lateinit var alarmViewModel: AlarmViewModel
     private var calendar = Calendar.getInstance()
@@ -48,6 +53,10 @@ class EditAlarmActivity : AppCompatActivity(), TimePicker.OnTimeChangedListener 
                 hour = 0
                 minute = 0
             }
+            calendar.apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+            }
         }
 
         timePicker.setOnTimeChangedListener(this)
@@ -75,7 +84,7 @@ class EditAlarmActivity : AppCompatActivity(), TimePicker.OnTimeChangedListener 
 
         alarmViewModel.addAlarm(alarm)
 
-        Log.d("editAlarm", "alarm inserted with time: $timeString")
+        Log.d(TAG, "alarm inserted with time: $timeString")
     }
 
     private fun updateDataInDatabase() {
@@ -85,7 +94,7 @@ class EditAlarmActivity : AppCompatActivity(), TimePicker.OnTimeChangedListener 
 
         alarmViewModel.updateAlarm(newAlarm)
 
-        Log.d("mainActivity", "alarm updated with time: $timeString.toString()")
+        Log.d(TAG, "alarm updated with time: $timeString.toString()")
     }
 
     override fun onTimeChanged(view: TimePicker?, hourOfDay: Int, minute: Int) {
@@ -93,7 +102,7 @@ class EditAlarmActivity : AppCompatActivity(), TimePicker.OnTimeChangedListener 
             set(Calendar.HOUR_OF_DAY, hourOfDay)
             set(Calendar.MINUTE, minute)
         }
-        Log.d("editAlarm", "time changed to ${calendar.get(Calendar.HOUR_OF_DAY)}:${calendar.get(Calendar.MINUTE)}")
+        Log.d(TAG, "time changed to ${calendar.get(Calendar.HOUR_OF_DAY)}:${calendar.get(Calendar.MINUTE)}")
 
     }
 

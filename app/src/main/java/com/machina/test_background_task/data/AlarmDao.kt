@@ -12,6 +12,9 @@ interface AlarmDao {
     @Update
     suspend fun updateAlarm(alarm: Alarm)
 
+    @Query("DELETE FROM alarm_table WHERE id IN (:ids)")
+    suspend fun deleteAlarm(ids: List<Long>)
+
 
     @Query("SELECT * FROM alarm_table ORDER BY id ASC")
     fun readAllData(): LiveData<List<Alarm>>

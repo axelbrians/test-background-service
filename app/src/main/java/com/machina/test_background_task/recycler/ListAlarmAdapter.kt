@@ -1,5 +1,6 @@
 package com.machina.test_background_task.recycler
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,7 +20,7 @@ class ListAlarmAdapter(private val alarmClickListener: AlarmClickListener) : Rec
     }
 
     private var alarmList = emptyList<Alarm>()
-    var tracker: SelectionTracker<Long> ?= null
+    var tracker: SelectionTracker<String> ?= null
 
     fun setData(alarm: List<Alarm>) {
         alarmList = alarm
@@ -36,14 +37,31 @@ class ListAlarmAdapter(private val alarmClickListener: AlarmClickListener) : Rec
     override fun onBindViewHolder(holder: AlarmViewHolder, position: Int) {
         val alarm = alarmList[position]
         tracker?.let {
-            holder.onBind(alarm, alarmClickListener, it.isSelected(alarm.id.toLong()))
+            holder.onBind(alarm, alarmClickListener, it.isSelected(alarm.id.toString()))
         }
     }
 
-    override fun getItemId(position: Int): Long = alarmList[position].id.toLong()
+    override fun getItemId(position: Int): Long {
+        Log.d("adapter", "id retrieved: ${alarmList[position].id.toLong()}")
+        return alarmList[position].id.toLong()
+    }
 
     override fun getItemCount(): Int {
         return alarmList.size
+    }
+
+    fun getItemPosition(key: String): Int {
+        return alarmList.indexOfFirst {
+            it.id.toString() == key
+        }
+    }
+
+    fun getItem(position: Int): Alarm {
+        return if (alarmList.isNotEmpty()){
+            alarmList[position]
+        } else {
+            Alarm(0,0, "empty")
+        }
     }
 }
 
@@ -65,11 +83,11 @@ class AlarmViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         }
     }
 
-    fun getItemDetails() : ItemDetailsLookup.ItemDetails<Long> {
-        return object : ItemDetailsLookup.ItemDetails<Long>() {
+    fun getItemDetails() : ItemDetailsLookup.ItemDetails<String> {
+        return object : ItemDetailsLookup.ItemDetails<String>() {
             override fun getPosition(): Int = adapterPosition
 
-            override fun getSelectionKey(): Long? = itemId
+            override fun getSelectionKey(): String? = itemId.toString()
         }
     }
 }
