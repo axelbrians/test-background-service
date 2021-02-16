@@ -8,7 +8,7 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import com.machina.test_background_task.ListAlarmActivity
+import com.machina.test_background_task.ListAlarmOnActivity
 import com.machina.test_background_task.OpenNotificationActivity
 import com.machina.test_background_task.R
 
@@ -25,8 +25,8 @@ class NotificationHelper(private val context: Context) : ContextWrapper(context)
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(ListAlarmActivity.CHANNEL_ID, ListAlarmActivity.CHANNEL_NAME, importance).apply {
-                description = ListAlarmActivity.CHANNEL_DESC
+            val channel = NotificationChannel(ListAlarmOnActivity.CHANNEL_ID, ListAlarmOnActivity.CHANNEL_NAME, importance).apply {
+                description = ListAlarmOnActivity.CHANNEL_DESC
             }
             // Register the channel with the system
             mManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -45,9 +45,9 @@ class NotificationHelper(private val context: Context) : ContextWrapper(context)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
 
-        val pendingIntent = PendingIntent.getActivity(context, ListAlarmActivity.NOTIF_CODE, intent, 0)
+        val pendingIntent = PendingIntent.getActivity(context, ListAlarmOnActivity.NOTIF_CODE, intent, 0)
 
-        return NotificationCompat.Builder(this, ListAlarmActivity.CHANNEL_ID)
+        return NotificationCompat.Builder(this, ListAlarmOnActivity.CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_baseline_copyright_24)
                 .setContentTitle(title)
                 .setContentText(text)

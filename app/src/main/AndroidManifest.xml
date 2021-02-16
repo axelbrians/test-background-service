@@ -9,7 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Testbackgroundtask">
-        <activity android:name=".ListAlarmActivity">
+        <activity android:name=".ListAlarmOnActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

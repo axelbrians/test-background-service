@@ -13,13 +13,14 @@ import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.machina.test_background_task.data.Alarm
-import com.machina.test_background_task.data.AlarmViewModel
+import com.machina.test_background_task.model.ListAlarmViewModel
 import com.machina.test_background_task.databinding.ActivityListAlarmBinding
 import com.machina.test_background_task.receiver.AlarmReceiver
 import com.machina.test_background_task.recycler.ListAlarmAdapter
-import com.machina.test_background_task.utilities.AlarmClickListener
+import com.machina.test_background_task.utilities.AlarmOnClickListener
+import com.machina.test_background_task.utilities.AlarmOnSwitchListener
 
-class ListAlarmActivity : AppCompatActivity(), AlarmClickListener {
+class ListAlarmOnActivity : AppCompatActivity(), AlarmOnClickListener, AlarmOnSwitchListener {
 
     companion object {
         const val CHANNEL_ID = "channel200"
@@ -42,7 +43,7 @@ class ListAlarmActivity : AppCompatActivity(), AlarmClickListener {
     }
 
     private lateinit var binding: ActivityListAlarmBinding
-    private lateinit var alarmViewModel: AlarmViewModel
+    private lateinit var listAlarmViewModel: ListAlarmViewModel
     private lateinit var listAlarmAdapter: ListAlarmAdapter
     private var actionMode: ActionMode ?= null
 
@@ -52,18 +53,18 @@ class ListAlarmActivity : AppCompatActivity(), AlarmClickListener {
         setContentView(binding.root)
         supportActionBar?.title = "Alarm"
 
-        alarmViewModel = ViewModelProvider(this).get(AlarmViewModel::class.java)
-        listAlarmAdapter = ListAlarmAdapter(this)
+        listAlarmViewModel = ViewModelProvider(this).get(ListAlarmViewModel::class.java)
+        listAlarmAdapter = ListAlarmAdapter(this, this)
 
         binding.listAlarmRecycler.apply {
             adapter = listAlarmAdapter
-            layoutManager = LinearLayoutManager(this@ListAlarmActivity)
+            layoutManager = LinearLayoutManager(this@ListAlarmOnActivity)
             itemAnimator = DefaultItemAnimator()
         }
 
         listAlarmAdapter.tracker = createTracker()
 
-        alarmViewModel.readAllData.observe(this, { alarm ->
+        listAlarmViewModel.readAllData.observe(this, { alarm ->
             listAlarmAdapter.setData(alarm)
         })
 
@@ -95,8 +96,8 @@ class ListAlarmActivity : AppCompatActivity(), AlarmClickListener {
     }
 
     private fun createTracker(): SelectionTracker<String> {
-        val alarmTracker = alarmViewModel.createSelectionTracker(listAlarmAdapter, binding.listAlarmRecycler)
-        val callback = alarmViewModel.createActionModeCallback(alarmTracker)
+        val alarmTracker = listAlarmViewModel.createSelectionTracker(listAlarmAdapter, binding.listAlarmRecycler)
+        val callback = listAlarmViewModel.createActionModeCallback(alarmTracker)
 
         alarmTracker.addObserver(
             object : SelectionTracker.SelectionObserver<String>() {
@@ -104,21 +105,21 @@ class ListAlarmActivity : AppCompatActivity(), AlarmClickListener {
                     val count: Int = alarmTracker.selection.size()
 
                     if (count > 0) {
-                        if (!alarmViewModel.isSelecting){
-                            alarmViewModel.updateIsSelecting()
+                        if (!listAlarmViewModel.isSelecting){
+                            listAlarmViewModel.updateIsSelecting()
                             actionMode = startSupportActionMode(callback)
                             if (actionMode != null) {
-                                Log.d(TAG, "start action mode\n isSelecting: ${alarmViewModel.isSelecting}")
+                                Log.d(TAG, "start action mode\n isSelecting: ${listAlarmViewModel.isSelecting}")
                             }
                         }
 
                         actionMode?.title = "$count selected"
                     } else {
-                        alarmViewModel.updateIsSelecting()
+                        listAlarmViewModel.updateIsSelecting()
                         actionMode?.finish()
                         alarmTracker.clearSelection()
 
-                        Log.d(TAG, "action mode dismissed\n isSelecting: ${alarmViewModel.isSelecting}")
+                        Log.d(TAG, "action mode dismissed\n isSelecting: ${listAlarmViewModel.isSelecting}")
                     }
                 }
             }
@@ -149,5 +150,10 @@ class ListAlarmActivity : AppCompatActivity(), AlarmClickListener {
         val intent = Intent(this, EditAlarmActivity::class.java)
         intent.putExtra(ALARM_EXTRA, alarm)
         startActivityForResult(intent, REQUEST_EDIT)
+    }
+
+    override fun onAlarmSwitched(alarm: Alarm) {
+        listAlarmViewModel.switchAlarm(alarm)
+        Log.d(TAG, "alarm switched on: ${alarm.id}")
     }
 }

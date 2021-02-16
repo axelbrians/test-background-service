@@ -1,4 +1,4 @@
-package com.machina.test_background_task.data
+package com.machina.test_background_task.model
 
 import android.app.Application
 import android.util.Log
@@ -11,13 +11,17 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.selection.*
 import androidx.recyclerview.widget.RecyclerView
 import com.machina.test_background_task.R
+import com.machina.test_background_task.data.Alarm
+import com.machina.test_background_task.data.AlarmDatabase
+import com.machina.test_background_task.data.AlarmRepository
+import com.machina.test_background_task.databinding.ActivityEditAlarmBinding
 import com.machina.test_background_task.recycler.AlarmDetailsLookup
 import com.machina.test_background_task.recycler.AlarmSelectionTracker
 import com.machina.test_background_task.recycler.ListAlarmAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class AlarmViewModel(application: Application): AndroidViewModel(application) {
+class ListAlarmViewModel(application: Application): AndroidViewModel(application) {
 
 
     private val repository: AlarmRepository
@@ -31,24 +35,19 @@ class AlarmViewModel(application: Application): AndroidViewModel(application) {
     }
 
     companion object {
-        private const val TAG = "AlarmViewModel"
-    }
-
-
-    fun addAlarm(alarm: Alarm) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.addAlarm(alarm)
-        }
-    }
-
-    fun updateAlarm(alarm: Alarm) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.updateAlarm(alarm)
-        }
+        private const val TAG = "ListAlarmViewModel"
     }
 
     fun updateIsSelecting() {
         isSelecting = !isSelecting
+    }
+
+    fun switchAlarm(alarm: Alarm) {
+        val newAlarm = alarm.copy(isOn = !alarm.isOn)
+
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateAlarm(newAlarm)
+        }
     }
 
     fun createSelectionTracker(adapter: ListAlarmAdapter, listAlarmRecycler: RecyclerView) : SelectionTracker<String> {
