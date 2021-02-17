@@ -20,13 +20,13 @@ import com.machina.test_background_task.recycler.ListAlarmAdapter
 import com.machina.test_background_task.utilities.AlarmOnClickListener
 import com.machina.test_background_task.utilities.AlarmOnSwitchListener
 
-class ListAlarmOnActivity : AppCompatActivity(), AlarmOnClickListener, AlarmOnSwitchListener {
+class ListAlarmActivity : AppCompatActivity(), AlarmOnClickListener, AlarmOnSwitchListener {
 
     companion object {
         const val CHANNEL_ID = "channel200"
         const val CHANNEL_NAME = "nameChannel200"
         const val CHANNEL_DESC = "descChannel200"
-        const val NOTIFY_ID = 200
+        const val NOTIFY_ID = "notificationExtra"
         const val ALARM_CODE = 1
         const val NOTIF_CODE = 0
 
@@ -45,6 +45,9 @@ class ListAlarmOnActivity : AppCompatActivity(), AlarmOnClickListener, AlarmOnSw
     private lateinit var binding: ActivityListAlarmBinding
     private lateinit var listAlarmViewModel: ListAlarmViewModel
     private lateinit var listAlarmAdapter: ListAlarmAdapter
+    private val alarmManager: AlarmManager by lazy {
+        getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    }
     private var actionMode: ActionMode ?= null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,8 +61,9 @@ class ListAlarmOnActivity : AppCompatActivity(), AlarmOnClickListener, AlarmOnSw
 
         binding.listAlarmRecycler.apply {
             adapter = listAlarmAdapter
-            layoutManager = LinearLayoutManager(this@ListAlarmOnActivity)
+            layoutManager = LinearLayoutManager(this@ListAlarmActivity)
             itemAnimator = DefaultItemAnimator()
+            addOnScrollListener(listAlarmViewModel.scrollListenerBuilder(binding.listAlarmFab))
         }
 
         listAlarmAdapter.tracker = createTracker()
@@ -73,26 +77,7 @@ class ListAlarmOnActivity : AppCompatActivity(), AlarmOnClickListener, AlarmOnSw
             val intent = Intent(this, EditAlarmActivity::class.java)
             startActivityForResult(intent, REQUEST_ADD)
         }
-    }
 
-    private fun startAlarm(calendar: Calendar) {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(this, AlarmReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, ALARM_CODE, intent, 0)
-
-        if (calendar.before(Calendar.getInstance())) {
-            calendar.add(Calendar.DATE, 1)
-        }
-
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
-    }
-
-    private fun cancelAlarm() {
-        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(this, AlarmReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(this, ALARM_CODE, intent, 0)
-
-        alarmManager.cancel(pendingIntent)
     }
 
     private fun createTracker(): SelectionTracker<String> {
@@ -131,15 +116,22 @@ class ListAlarmOnActivity : AppCompatActivity(), AlarmOnClickListener, AlarmOnSw
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
+        val alarm = data?.getParcelableExtra<Alarm>(ALARM_EXTRA)
         when (requestCode) {
             REQUEST_ADD -> {
                 if (resultCode == OPTION_SAVE) {
-                    Log.d(TAG, "masuk ke request add")
+                    if (alarm != null) {
+                        listAlarmViewModel.startAlarm(alarm, alarmManager, this)
+                        Log.d(TAG, "masuk ke request add")
+                    }
                 }
             }
             REQUEST_EDIT -> {
                 if (resultCode == OPTION_SAVE) {
-                    Log.d(TAG, "masuk ke request edit")
+                    if (alarm != null) {
+                        listAlarmViewModel.startAlarm(alarm, alarmManager, this)
+                        Log.d(TAG, "masuk ke request edit")
+                    }
                 }
             }
         }
@@ -153,7 +145,6 @@ class ListAlarmOnActivity : AppCompatActivity(), AlarmOnClickListener, AlarmOnSw
     }
 
     override fun onAlarmSwitched(alarm: Alarm) {
-        listAlarmViewModel.switchAlarm(alarm)
-        Log.d(TAG, "alarm switched on: ${alarm.id}")
+        listAlarmViewModel.switchAlarm(alarm, alarmManager, this)
     }
 }

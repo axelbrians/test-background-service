@@ -47,7 +47,6 @@ class ListAlarmAdapter(
     }
 
     override fun getItemId(position: Int): Long {
-        Log.d("adapter", "id retrieved: ${alarmList[position].id.toLong()}")
         return alarmList[position].id.toLong()
     }
 
@@ -100,7 +99,7 @@ class AlarmViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         return object : ItemDetailsLookup.ItemDetails<String>() {
             override fun getPosition(): Int = adapterPosition
 
-            override fun getSelectionKey(): String? = itemId.toString()
+            override fun getSelectionKey(): String = itemId.toString()
         }
     }
 }

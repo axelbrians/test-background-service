@@ -1,5 +1,6 @@
 package com.machina.test_background_task
 
+import android.content.Intent
 import android.icu.util.Calendar
 import android.os.Bundle
 import android.util.Log
@@ -36,21 +37,26 @@ class EditAlarmActivity : AppCompatActivity(), TimePicker.OnTimeChangedListener 
 
 
         binding.editAlarmCancel.setOnClickListener {
-            setResult(ListAlarmOnActivity.OPTION_CANCEL)
+            setResult(ListAlarmActivity.OPTION_CANCEL)
             finish()
         }
 
         binding.editAlarmSave.setOnClickListener {
-            val intentExtra = intent.getParcelableExtra<Alarm>(ListAlarmOnActivity.ALARM_EXTRA)
+            val newAlarm: Alarm
+            val intentExtra = intent.getParcelableExtra<Alarm>(ListAlarmActivity.ALARM_EXTRA)
+
             if (intentExtra != null) {
-                mViewModel.updateAlarm(binding, calendar, intentExtra)
+                newAlarm = mViewModel.updateAlarm(binding, calendar, intentExtra)
                 Log.d(TAG, "alarm updated with: ${calendar.time}")
             } else {
-                mViewModel.addAlarm(binding, calendar)
+                newAlarm = mViewModel.addAlarm(binding, calendar)
                 Log.d(TAG, "alarm inserted with: ${calendar.time}")
             }
 
-            setResult(ListAlarmOnActivity.OPTION_SAVE)
+            val intentResult = Intent()
+            intentResult.putExtra(ListAlarmActivity.ALARM_EXTRA, newAlarm)
+
+            setResult(ListAlarmActivity.OPTION_SAVE, intentResult)
             finish()
         }
     }
@@ -60,7 +66,7 @@ class EditAlarmActivity : AppCompatActivity(), TimePicker.OnTimeChangedListener 
             set(Calendar.HOUR_OF_DAY, hourOfDay)
             set(Calendar.MINUTE, minute)
         }
-        Log.d(TAG, "time changed to ${calendar.get(Calendar.HOUR_OF_DAY)}:${calendar.get(Calendar.MINUTE)}")
+//        Log.d(TAG, "time changed to ${calendar.get(Calendar.HOUR_OF_DAY)}:${calendar.get(Calendar.MINUTE)}")
 
     }
 

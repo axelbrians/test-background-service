@@ -16,7 +16,7 @@ interface AlarmDao {
     suspend fun deleteAlarm(ids: List<Long>)
 
 
-    @Query("SELECT * FROM alarm_table ORDER BY id ASC")
+    @Query("SELECT * FROM alarm_table ORDER BY time ASC")
     fun readAllData(): LiveData<List<Alarm>>
 
 }

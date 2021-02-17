@@ -1,6 +1,8 @@
 package com.machina.test_background_task.model
 
+import android.app.AlarmManager
 import android.app.Application
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
@@ -8,11 +10,12 @@ import android.text.format.DateFormat
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.machina.test_background_task.ListAlarmOnActivity
+import com.machina.test_background_task.ListAlarmActivity
 import com.machina.test_background_task.data.Alarm
 import com.machina.test_background_task.data.AlarmDatabase
 import com.machina.test_background_task.data.AlarmRepository
 import com.machina.test_background_task.databinding.ActivityEditAlarmBinding
+import com.machina.test_background_task.receiver.AlarmReceiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -30,24 +33,26 @@ class EditAlarmViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
 
-    fun addAlarm(binding: ActivityEditAlarmBinding, calendar: Calendar) {
+    fun addAlarm(binding: ActivityEditAlarmBinding, calendar: Calendar): Alarm {
         val timeString = DateFormat.format("HH:mm", calendar.time)
-        val alarm = alarmBuilder(0, calendar.timeInMillis, timeString.toString(), true, binding)
-
-        Log.d(TAG, "monday chip status: $alarm")
+        val newAlarm = alarmBuilder(0, calendar.timeInMillis, timeString.toString(), true, binding)
 
         viewModelScope.launch(Dispatchers.IO) {
-            repository.addAlarm(alarm)
+            repository.addAlarm(newAlarm)
         }
+
+        return newAlarm
     }
 
-    fun updateAlarm(binding: ActivityEditAlarmBinding, calendar: Calendar, alarm: Alarm) {
+    fun updateAlarm(binding: ActivityEditAlarmBinding, calendar: Calendar, alarm: Alarm): Alarm {
         val timeString = DateFormat.format("HH:mm", calendar.time)
-        val newAlarm = alarmBuilder(alarm.id, calendar.timeInMillis, timeString.toString(), alarm.isOn, binding)
+        val newAlarm = alarmBuilder(alarm.id, calendar.timeInMillis, timeString.toString(), true, binding)
 
         viewModelScope.launch(Dispatchers.IO) {
             repository.updateAlarm(newAlarm)
         }
+
+        return newAlarm
     }
 
     private fun alarmBuilder(id: Int, time: Long, timeText: String, isOn: Boolean, binding: ActivityEditAlarmBinding): Alarm {
@@ -63,11 +68,11 @@ class EditAlarmViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun fetchTimePickerChip(binding: ActivityEditAlarmBinding, intent: Intent, calendar: Calendar, context: Context) {
         val timePicker = binding.editAlarmTimePicker
-        val isIntent = (intent.getParcelableExtra<Alarm>(ListAlarmOnActivity.ALARM_EXTRA) != null)
+        val isIntent = (intent.getParcelableExtra<Alarm>(ListAlarmActivity.ALARM_EXTRA) != null)
         timePicker.setIs24HourView(DateFormat.is24HourFormat(context))
 
         if (isIntent) {
-            val alarm = intent.getParcelableExtra<Alarm>(ListAlarmOnActivity.ALARM_EXTRA)
+            val alarm = intent.getParcelableExtra<Alarm>(ListAlarmActivity.ALARM_EXTRA)
             if (alarm != null) {
                 calendar.timeInMillis = alarm.time
             }
@@ -88,6 +93,7 @@ class EditAlarmViewModel(application: Application) : AndroidViewModel(applicatio
             calendar.apply {
                 set(Calendar.HOUR_OF_DAY, 0)
                 set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
             }
         }
     }
