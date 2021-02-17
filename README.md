@@ -1,2 +1,2 @@
 # test-background-service
-Alarm app with MVVM architecture
+Alarm app with MVVM architecture and room db
