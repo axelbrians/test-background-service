@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.core.app.NotificationCompat
 import com.machina.test_background_task.ListAlarmActivity
 import com.machina.test_background_task.helper.NotificationHelper
 

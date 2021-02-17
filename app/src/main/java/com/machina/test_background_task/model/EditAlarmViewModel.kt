@@ -1,8 +1,6 @@
 package com.machina.test_background_task.model
 
-import android.app.AlarmManager
 import android.app.Application
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
@@ -15,7 +13,6 @@ import com.machina.test_background_task.data.Alarm
 import com.machina.test_background_task.data.AlarmDatabase
 import com.machina.test_background_task.data.AlarmRepository
 import com.machina.test_background_task.databinding.ActivityEditAlarmBinding
-import com.machina.test_background_task.receiver.AlarmReceiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 

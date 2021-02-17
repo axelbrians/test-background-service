@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.machina.test_background_task.data.Alarm
 import com.machina.test_background_task.model.ListAlarmViewModel
 import com.machina.test_background_task.databinding.ActivityListAlarmBinding
-import com.machina.test_background_task.receiver.AlarmReceiver
 import com.machina.test_background_task.recycler.ListAlarmAdapter
 import com.machina.test_background_task.utilities.AlarmOnClickListener
 import com.machina.test_background_task.utilities.AlarmOnSwitchListener
