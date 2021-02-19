@@ -33,8 +33,9 @@ class EditAlarmActivity : AppCompatActivity(), TimePicker.OnTimeChangedListener 
 
     private fun initializeUi() {
         mViewModel.fetchTimePickerChip(binding, intent, calendar, this)
-        binding.editAlarmTimePicker.setOnTimeChangedListener(this)
+        mViewModel.setChipClickListener(binding)
 
+        binding.editAlarmTimePicker.setOnTimeChangedListener(this)
 
         binding.editAlarmCancel.setOnClickListener {
             setResult(ListAlarmActivity.OPTION_CANCEL)

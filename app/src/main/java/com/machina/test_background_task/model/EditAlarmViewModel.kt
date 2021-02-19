@@ -6,6 +6,7 @@ import android.content.Intent
 import android.icu.util.Calendar
 import android.text.format.DateFormat
 import android.util.Log
+import android.view.View
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.machina.test_background_task.ListAlarmActivity
@@ -105,6 +106,92 @@ class EditAlarmViewModel(application: Application) : AndroidViewModel(applicatio
             sat.isChecked = alarm.sat
             sun.isChecked = alarm.sun
         }
+    }
+
+    fun setChipClickListener(binding: ActivityEditAlarmBinding) {
+        binding.mon.setOnClickListener { chip ->
+            onChecked(binding, chip)
+        }
+        binding.tue.setOnClickListener { chip ->
+            onChecked(binding, chip)
+        }
+        binding.wed.setOnClickListener { chip ->
+            onChecked(binding, chip)
+        }
+        binding.thu.setOnClickListener { chip ->
+            onChecked(binding, chip)
+        }
+        binding.fri.setOnClickListener { chip ->
+            onChecked(binding, chip)
+        }
+        binding.sat.setOnClickListener { chip ->
+            onChecked(binding, chip)
+        }
+        binding.sun.setOnClickListener { chip ->
+            onChecked(binding, chip)
+        }
+    }
+
+    private fun onChecked(binding: ActivityEditAlarmBinding, chip: View) {
+        when (chip) {
+            binding.mon -> {
+                binding.tue.isChecked = false
+                binding.wed.isChecked = false
+                binding.thu.isChecked = false
+                binding.fri.isChecked = false
+                binding.sat.isChecked = false
+                binding.sun.isChecked = false
+            }
+            binding.tue -> {
+                binding.mon.isChecked = false
+                binding.wed.isChecked = false
+                binding.thu.isChecked = false
+                binding.fri.isChecked = false
+                binding.sat.isChecked = false
+                binding.sun.isChecked = false
+            }
+            binding.wed -> {
+                binding.mon.isChecked = false
+                binding.tue.isChecked = false
+                binding.thu.isChecked = false
+                binding.fri.isChecked = false
+                binding.sat.isChecked = false
+                binding.sun.isChecked = false
+            }
+            binding.thu -> {
+                binding.mon.isChecked = false
+                binding.tue.isChecked = false
+                binding.wed.isChecked = false
+                binding.fri.isChecked = false
+                binding.sat.isChecked = false
+                binding.sun.isChecked = false
+            }
+            binding.fri -> {
+                binding.mon.isChecked = false
+                binding.tue.isChecked = false
+                binding.wed.isChecked = false
+                binding.thu.isChecked = false
+                binding.sat.isChecked = false
+                binding.sun.isChecked = false
+            }
+            binding.sat -> {
+                binding.mon.isChecked = false
+                binding.tue.isChecked = false
+                binding.wed.isChecked = false
+                binding.thu.isChecked = false
+                binding.fri.isChecked = false
+                binding.sun.isChecked = false
+            }
+            binding.sun -> {
+                binding.mon.isChecked = false
+                binding.tue.isChecked = false
+                binding.wed.isChecked = false
+                binding.thu.isChecked = false
+                binding.fri.isChecked = false
+                binding.sat.isChecked = false
+            }
+        }
+
     }
 
 }

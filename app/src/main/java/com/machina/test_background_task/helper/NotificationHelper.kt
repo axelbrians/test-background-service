@@ -38,19 +38,24 @@ class NotificationHelper(private val context: Context) : ContextWrapper(context)
         return mManager
     }
 
-    fun getChannelNotification(): NotificationCompat.Builder {
-        val title = "Notification Title"
-        val text = "Some random text to test notification"
+    fun getChannelNotification(title: String?, text: String?): NotificationCompat.Builder {
+        var newTitle = title
+        var newText = text
         val intent = Intent(this, OpenNotificationActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
-
         val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+
+        if (newTitle.isNullOrEmpty())
+            newTitle = "error code 404"
+        if (newText.isNullOrEmpty())
+            newText = "content not found"
+
 
         return NotificationCompat.Builder(this, ListAlarmActivity.CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_baseline_copyright_24)
-                .setContentTitle(title)
-                .setContentText(text)
+                .setContentTitle(newTitle)
+                .setContentText(newText)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)

@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
+import android.text.format.DateFormat
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -22,6 +23,7 @@ import com.machina.test_background_task.R
 import com.machina.test_background_task.data.Alarm
 import com.machina.test_background_task.data.AlarmDatabase
 import com.machina.test_background_task.data.AlarmRepository
+import com.machina.test_background_task.databinding.ActivityEditAlarmBinding
 import com.machina.test_background_task.receiver.AlarmReceiver
 import com.machina.test_background_task.recycler.AlarmDetailsLookup
 import com.machina.test_background_task.recycler.AlarmSelectionTracker
@@ -64,35 +66,107 @@ class ListAlarmViewModel(application: Application): AndroidViewModel(application
         }
     }
 
+    private fun updateAlarm(newTime: Long, calendar: Calendar, alarm: Alarm) {
+        val timeString = DateFormat.format("HH:mm", calendar.time).toString()
+        val newAlarm = alarm.copy(time = newTime, timeText = timeString)
+
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateAlarm(newAlarm)
+        }
+    }
+
     fun startAlarm(alarm: Alarm, manager: AlarmManager, context: Context) {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = alarm.time
-//        Log.d(TAG, "time in ${calendar.get(Calendar.HOUR_OF_DAY)}:${calendar.get(Calendar.MINUTE)}")
+        Log.d(TAG, "time in ${calendar.get(Calendar.HOUR_OF_DAY)}:${calendar.get(Calendar.MINUTE)}:${calendar.get(Calendar.SECOND)}")
 
         val intent = Intent(context, AlarmReceiver::class.java)
-        intent.putExtra(ListAlarmActivity.NOTIFY_ID, alarm.id)
-        Log.d(TAG, "putExtra id: ${alarm.id}")
+        intent.apply {
+            putExtra(ListAlarmActivity.NOTIFY_ID, alarm.id)
+            putExtra(ListAlarmActivity.NOTIFICATION_TITLE, "id ${alarm.id}")
+            putExtra(ListAlarmActivity.NOTIFICATION_TEXT, "time in ${calendar.get(Calendar.HOUR_OF_DAY)}:${calendar.get(Calendar.MINUTE)}")
+        }
+        Log.d(TAG, "putExtra id: ${notificationId(alarm)}")
 
-        val pendingIntent = PendingIntent.getBroadcast(context, alarm.id, intent, 0)
-
-        if (calendar.before(Calendar.getInstance())) {
-            calendar.add(Calendar.DATE, 1)
-            Log.d(TAG, "calendar set for tomorrow")
+        if (alarm.mon) launchRepeat(context, intent, manager, 1, alarm.id, calendar.timeInMillis)
+        else if (alarm.tue) launchRepeat(context, intent, manager, 2, alarm.id, calendar.timeInMillis)
+        else if (alarm.wed) launchRepeat(context, intent, manager, 3, alarm.id, calendar.timeInMillis)
+        else if (alarm.thu) launchRepeat(context, intent, manager, 4, alarm.id, calendar.timeInMillis)
+        else if (alarm.fri) launchRepeat(context, intent, manager, 5, alarm.id, calendar.timeInMillis)
+        else if (alarm.sat) launchRepeat(context, intent, manager, 6, alarm.id, calendar.timeInMillis)
+        else if (alarm.sun) launchRepeat(context, intent, manager, 7, alarm.id, calendar.timeInMillis)
+        else {
+            if (calendar.before(Calendar.getInstance())) {
+                calendar.add(Calendar.DATE, 1)
+                updateAlarm(calendar.timeInMillis, calendar, alarm)
+                Log.d(TAG, "calendar set for tomorrow")
+            }
+            intent.putExtra(ListAlarmActivity.REPEAT, false)
+            val pendingIntent = PendingIntent.getBroadcast(context, alarmId(0, alarm.id), intent, 0)
+            manager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
+            Log.d(TAG, "single time alarm launched ${0}${alarm.id}")
         }
 
-        manager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
+
     }
 
-    private fun cancelAlarm(alarm: Alarm, manager: AlarmManager, context: Context) {
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = alarm.time
-        Log.d(TAG, "time in ${calendar.get(Calendar.HOUR_OF_DAY)}:${calendar.get(Calendar.MINUTE)}")
-
+    fun cancelAlarm(alarm: Alarm, manager: AlarmManager, context: Context) {
         val intent = Intent(context, AlarmReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(context, alarm.id, intent, 0)
-        Log.d(TAG, "alarm with id: ${alarm.id} canceled")
+        if (alarm.mon) cancelRepeat(context, intent, manager, 1, alarm.id)
+        if (alarm.tue) cancelRepeat(context, intent, manager, 2, alarm.id)
+        if (alarm.wed) cancelRepeat(context, intent, manager, 3, alarm.id)
+        if (alarm.thu) cancelRepeat(context, intent, manager, 4, alarm.id)
+        if (alarm.fri) cancelRepeat(context, intent, manager, 5, alarm.id)
+        if (alarm.sat) cancelRepeat(context, intent, manager, 6, alarm.id)
+        if (alarm.sun) cancelRepeat(context, intent, manager, 7, alarm.id)
+        if (!alarm.mon && !alarm.tue && !alarm.wed && !alarm.thu && !alarm.fri && !alarm.sat && !alarm.sun) {
+            intent.putExtra(ListAlarmActivity.REPEAT, false)
+            val pendingIntent = PendingIntent.getBroadcast(context, alarmId(0, alarm.id), intent, 0)
+            manager.cancel(pendingIntent)
+            Log.d(TAG, "single time alarm canceled ${0}${alarm.id}")
+        }
+    }
 
+    private fun launchRepeat(context: Context, intent: Intent, manager: AlarmManager, day: Int, id: Int, time: Long) {
+        intent.putExtra(ListAlarmActivity.REPEAT, true)
+        intent.putExtra(ListAlarmActivity.ALARM_ID, alarmId(day, id))
+
+        val pendingIntent = PendingIntent.getBroadcast(context, alarmId(day, id), intent, 0)
+
+        manager.setExact(AlarmManager.RTC_WAKEUP, time, pendingIntent)
+        Log.d(TAG, "repeat alarm id: ${day}${id}")
+    }
+
+    private fun cancelRepeat(context: Context, intent: Intent, manager: AlarmManager, day: Int, id: Int) {
+        val pendingIntent = PendingIntent.getBroadcast(context, alarmId(day, id), intent, 0)
         manager.cancel(pendingIntent)
+        Log.d(TAG, "alarm with id: ${day}${id} canceled")
+    }
+
+    private fun alarmId(day: Int, id: Int): Int {
+        return when (day) {
+            1 -> ("$id" + "1000000").toInt()
+            2 -> ("$id" + "0100000").toInt()
+            3 -> ("$id" + "0010000").toInt()
+            4 -> ("$id" + "0001000").toInt()
+            5 -> ("$id" + "0000100").toInt()
+            6 -> ("$id" + "0000010").toInt()
+            7 -> ("$id" + "0000001").toInt()
+            else -> ("$id" + "0000000").toInt()
+        }
+    }
+
+    private fun notificationId(alarm: Alarm): Int {
+        var id = "${alarm.id}"
+        id += if (alarm.mon) "1" else "0"
+        id += if (alarm.tue) "1" else "0"
+        id += if (alarm.wed) "1" else "0"
+        id += if (alarm.thu) "1" else "0"
+        id += if (alarm.fri) "1" else "0"
+        id += if (alarm.sat) "1" else "0"
+        id += if (alarm.sun) "1" else "0"
+
+        return id.toInt()
     }
 
 
@@ -165,5 +239,4 @@ class ListAlarmViewModel(application: Application): AndroidViewModel(application
             }
         }
     }
-
 }

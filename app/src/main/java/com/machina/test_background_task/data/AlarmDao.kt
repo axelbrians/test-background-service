@@ -19,4 +19,6 @@ interface AlarmDao {
     @Query("SELECT * FROM alarm_table ORDER BY time ASC")
     fun readAllData(): LiveData<List<Alarm>>
 
+    @Query("UPDATE alarm_table SET isOn = (:reset) WHERE id = (:newId)")
+    fun resetAlarm(newId: Int, reset: Boolean)
 }

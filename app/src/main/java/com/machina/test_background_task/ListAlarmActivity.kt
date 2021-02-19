@@ -26,8 +26,8 @@ class ListAlarmActivity : AppCompatActivity(), AlarmOnClickListener, AlarmOnSwit
         const val CHANNEL_NAME = "nameChannel200"
         const val CHANNEL_DESC = "descChannel200"
         const val NOTIFY_ID = "notificationExtra"
-        const val ALARM_CODE = 1
-        const val NOTIF_CODE = 0
+        const val ALARM_ID = "alarm_id"
+        const val REPEAT = "repeat_flag"
 
 //        edit alarm val
         const val REQUEST_ADD = 1
@@ -37,6 +37,10 @@ class ListAlarmActivity : AppCompatActivity(), AlarmOnClickListener, AlarmOnSwit
 
         // alarm constant identifier
         const val ALARM_EXTRA = "extra_alarm"
+
+        // extra tag for notification
+        const val NOTIFICATION_TITLE = "notification_title"
+        const val NOTIFICATION_TEXT = "notification_text"
 
         private const val TAG = "ListAlarmActivity"
     }
