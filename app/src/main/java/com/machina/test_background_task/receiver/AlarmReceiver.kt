@@ -6,8 +6,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
+import android.os.Looper
 import android.text.format.DateFormat
 import android.util.Log
+import androidx.core.os.HandlerCompat
 import androidx.lifecycle.viewModelScope
 import com.machina.test_background_task.ListAlarmActivity
 import com.machina.test_background_task.data.AlarmDatabase
@@ -16,6 +18,7 @@ import com.machina.test_background_task.helper.NotificationHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import java.util.concurrent.Executors
 import kotlin.random.Random
 
 class AlarmReceiver : BroadcastReceiver() {
@@ -53,6 +56,14 @@ class AlarmReceiver : BroadcastReceiver() {
 
             manager.setExact(AlarmManager.RTC_WAKEUP, time + (24 * 60 * 60 * 1000) , pendingIntent)
             Log.d("receiver", "alarm scheduled for next time")
+        } else {
+            val executorService = Executors.newFixedThreadPool(4)
+            executorService.execute {
+                val alarmDao = AlarmDatabase.getDatabase(context).alarmDao()
+                val repository = AlarmRepository(alarmDao)
+
+                repository.resetAlarm(id)
+            }
         }
     }
 

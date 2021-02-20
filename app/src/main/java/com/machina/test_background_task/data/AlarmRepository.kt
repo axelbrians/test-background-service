@@ -17,4 +17,8 @@ class AlarmRepository(private val alarmDao: AlarmDao) {
     suspend fun deleteAlarm(ids: List<Long>){
         alarmDao.deleteAlarm(ids)
     }
+
+    fun resetAlarm(id: Int) {
+        alarmDao.resetAlarm(id, false)
+    }
 }
